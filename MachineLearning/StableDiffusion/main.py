@@ -46,9 +46,9 @@ def process_image_with_model(model:      Image2ImageModel,
         prompt      = prompt,
         input_image = input_image,
 
-        strength        = 0.2,
-        guidance_scale  = 10,
-        inference_steps = 50,
+        strength        = 0.85,
+        guidance_scale  = 13.0,
+        inference_steps = 75,
 
         negative_prompt = negative_prompt
     )
@@ -76,7 +76,7 @@ if __name__ == '__main__':
         
         # Start GUI process
         gui_process = Process(
-            target = run_GUI_process, args = (image_queue,)
+            target = run_GUI_process, args = (image_queue, )
         )
         gui_process.start()
         
