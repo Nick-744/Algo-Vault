@@ -1,3 +1,5 @@
+# Stable Diffusion Image-to-Image Model Wrapper.
+
 from my_settings import (WIDTH, HEIGHT)
 
 from diffusers import (

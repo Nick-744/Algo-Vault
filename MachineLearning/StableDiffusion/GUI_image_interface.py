@@ -1,10 +1,14 @@
+# PyQt5-based class for a simple drag-and-drop
+# interface for image files. Enables users to
+# dynamically input images by dragging them into the application!
+
 from PyQt5.QtGui import (
     QPixmap, QDragEnterEvent, QDragMoveEvent, QDropEvent
 )
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QVBoxLayout
 )
-from PyQt5.QtCore import (Qt, pyqtSignal, QTimer)
+from PyQt5.QtCore import (Qt, pyqtSignal)
 import sys
 
 class _ImageLabel(QLabel):
@@ -16,6 +20,8 @@ class _ImageLabel(QLabel):
         self.setStyleSheet('''
             QLabel {
                 border: 4px dashed #aaa;
+                font-size: 24px;
+                color: #666;
             }
         ''')
 
@@ -34,8 +40,7 @@ class _ImageLabel(QLabel):
         return;
 
 class DragAndDropImage(QWidget):
-    # Signal carrying the image path:
-    image_dropped = pyqtSignal(str)
+    image_dropped = pyqtSignal(str) # Signal [image path]
 
     def __init__(self) -> None:
         super().__init__();
@@ -51,42 +56,26 @@ class DragAndDropImage(QWidget):
 
         self.setLayout(main_layout)
 
-        # Timer for closing the window after showing the image
-        self.close_timer = QTimer()
-        self.close_timer.timeout.connect(self.close_and_process)
-        self.close_timer.setSingleShot(True) # Only fire once
-        
-        self.pending_file_path = None # Image file path
-
         return;
 
+    # --- Methods from QWidget parent class ---
     def dragEnterEvent(self, event: QDragEnterEvent) -> None:
-        self.__enter_move_event_handler(event)
+        self.__handle_drag_event(event)
         
         return;
 
     def dragMoveEvent(self, event: QDragMoveEvent) -> None:
-        self.__enter_move_event_handler(event)
+        self.__handle_drag_event(event)
 
         return;
     
     def dropEvent(self, event: QDropEvent) -> None:
         if event.mimeData().hasImage:
             event.setDropAction(Qt.CopyAction)
-            file_path = event.mimeData().urls()[0].toLocalFile()
 
-            # Store the file path for later processing
-            self.pending_file_path = file_path
-            
-            # Display the image immediately
+            file_path = event.mimeData().urls()[0].toLocalFile()
             self.__set_image(file_path)
-            
-            # Update the window title to show processing status
-            self.setWindowTitle('Processing...')
-            
-            # Start timer to close window and
-            # emit signal after 2 seconds...
-            self.close_timer.start(2000)
+            self.image_dropped.emit(file_path) # Emit the signal!
 
             event.accept()
         else:
@@ -94,19 +83,8 @@ class DragAndDropImage(QWidget):
 
         return;
 
-    def close_and_process(self) -> None:
-        ''' Called by timer to close window and emit signal '''
-        if self.pending_file_path:
-            # Emit the signal with the image path
-            self.image_dropped.emit(self.pending_file_path)
-            
-        # Close the window
-        self.close()
-        
-        return;
-
-    def __enter_move_event_handler(self,
-                                   event: QDragMoveEvent) -> None:
+    # --- Private methods ---
+    def __handle_drag_event(self, event: QDragMoveEvent) -> None:
         if event.mimeData().hasImage:
             event.accept()
         else:
@@ -116,13 +94,21 @@ class DragAndDropImage(QWidget):
 
     def __set_image(self, file_path: str) -> str:
         self.photo_viewer.set_pixmap(QPixmap(file_path))
-
         return file_path;
 
+# --- Demo code ---
 if __name__ == '__main__':
     app = QApplication(sys.argv)
 
     main_window = DragAndDropImage()
+    
+    def on_drop(path: str) -> None:
+        print(f'Image dropped: {path}')
+        app.quit()
+
+        return;
+    
+    main_window.image_dropped.connect(on_drop)
     main_window.show()
 
     sys.exit(app.exec_())
