@@ -1,12 +1,17 @@
 # Stable Diffusion Image-to-Image Model Wrapper.
 
-from my_settings import (WIDTH, HEIGHT)
+from my_settings import (
+    model_file_name, prompt, negative_prompt,
+    WIDTH, HEIGHT
+)
 
 from diffusers import (
     StableDiffusionXLPipeline, DPMSolverMultistepScheduler
 )
+from time import time
 from PIL import Image
 import torch
+import os
 
 # Dummy safety checker to bypass filtering!
 class _DummySafetyChecker:
@@ -55,7 +60,7 @@ class Image2ImageModel:
 
     def forward(self,
                 prompt:          str,
-                input_image:     Image.Image,
+                input_image:     Image.Image = None,
 
                 strength:        float = 0.3,
                 guidance_scale:  float = 10,
@@ -63,19 +68,56 @@ class Image2ImageModel:
 
                 negative_prompt: str = None) -> Image.Image:
         print('\nGenerating image...')
-        result = self.model(
-            prompt = prompt,
-            image  = input_image,
 
-            strength            = strength,
-            guidance_scale      = guidance_scale,
-            num_inference_steps = inference_steps,
-            width = WIDTH, height = HEIGHT,
+        if input_image is not None:
+            result = self.model(
+                prompt = prompt,
+                image  = input_image,
 
-             negative_prompt = negative_prompt
-        )
+                strength            = strength,
+                guidance_scale      = guidance_scale,
+                num_inference_steps = inference_steps,
+                width = WIDTH, height = HEIGHT,
+
+                negative_prompt = negative_prompt
+            )
+        else:
+            result = self.model(
+                prompt = prompt,
+
+                strength            = strength,
+                guidance_scale      = guidance_scale,
+                num_inference_steps = inference_steps,
+
+                negative_prompt = negative_prompt
+            )
 
         output_image = result.images[0]
         print('-> Image generated successfully!')
 
         return output_image;
+
+if __name__ == '__main__':
+    BASE_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
+    model_path     = os.path.join(BASE_DIRECTORY, model_file_name)
+    my_model       = Image2ImageModel(model_path)
+
+    # Directory management
+    output_dir = os.path.join(BASE_DIRECTORY, 'model_outputs')
+    os.makedirs(output_dir, exist_ok = True)
+
+    output_image = my_model.forward(
+        prompt = prompt,
+
+        strength        = 0.85,
+        guidance_scale  = 13.0,
+        inference_steps = 60,
+
+        negative_prompt = negative_prompt
+    )
+
+    output_path = os.path.join(
+        BASE_DIRECTORY, 'model_outputs', f'output_{int(time())}.png'
+    )
+    output_image.save(output_path)
+    print(f'-> Image saved to {output_path}')
