@@ -106,18 +106,19 @@ if __name__ == '__main__':
     output_dir = os.path.join(BASE_DIRECTORY, 'model_outputs')
     os.makedirs(output_dir, exist_ok = True)
 
-    output_image = my_model.forward(
-        prompt = prompt,
+    while True:
+        output_image = my_model.forward(
+            prompt = prompt,
 
-        strength        = 0.85,
-        guidance_scale  = 13.0,
-        inference_steps = 60,
+            strength        = 0.85,
+            guidance_scale  = 13.0,
+            inference_steps = 50,
 
-        negative_prompt = negative_prompt
-    )
+            negative_prompt = negative_prompt
+        )
 
-    output_path = os.path.join(
-        BASE_DIRECTORY, 'model_outputs', f'output_{int(time())}.png'
-    )
-    output_image.save(output_path)
-    print(f'-> Image saved to {output_path}')
+        output_path = os.path.join(
+            BASE_DIRECTORY, 'model_outputs', f'output_{int(time())}.png'
+        )
+        output_image.save(output_path)
+        print(f'-> Image saved to {output_path}')
