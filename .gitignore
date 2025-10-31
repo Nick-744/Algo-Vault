@@ -5,3 +5,4 @@ model_outputs/
 model_inputs/
 resized_images/
 TEMP/
+/data
