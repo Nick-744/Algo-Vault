@@ -5,6 +5,8 @@ from torchvision import datasets
 from torchvision import transforms
 from torch.utils.data.sampler import SubsetRandomSampler
 
+
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f'Using device: {device}')
 
@@ -23,7 +25,9 @@ def get_train_valid_loader(data_dir:   str,
     # https://stackoverflow.com/questions/66678052/how-to-calculate-the-mean-and-the-std-of-cifar10-data
 
     valid_transform = transforms.Compose([
-            transforms.Resize((224,224)),
+            transforms.Resize((227, 227)), # Γιατί όχι 224x224;
+            # Το σχήμα του paper δεν σημφωνεί με τα μαθηματικά του...
+            # Παρουσιάζεται πρόβλημα με τις διαστάσεις στους πολλαπλασιασμούς πινάκων!
             transforms.ToTensor(),
             normalize
     ])
@@ -38,7 +42,7 @@ def get_train_valid_loader(data_dir:   str,
         ])
     else:
         train_transform = transforms.Compose([
-            transforms.Resize((224,224)),
+            transforms.Resize((227, 227)),
             transforms.ToTensor(),
             normalize
         ])
@@ -92,7 +96,7 @@ def get_test_loader(data_dir:   str,
     )
 
     transform = transforms.Compose([
-        transforms.Resize((224,224)),
+        transforms.Resize((227, 227)),
         transforms.ToTensor(),
         normalize
     ])
@@ -121,6 +125,8 @@ test_loader = get_test_loader(data_dir = './data', batch_size = 64)
 
 class AlexNet(nn.Module):
     def __init__(self, num_classes = 10):
+        super(AlexNet, self).__init__() # Επειδή κληρονομεί από nn.Module
+
         self.layer1 = nn.Sequential(
             nn.Conv2d(3, 96, kernel_size = 11, stride = 4, padding = 0), # 96 φίλτρα βάση αρχιτεκτονικής
             nn.BatchNorm2d(96),
@@ -191,7 +197,7 @@ optimizer = torch.optim.SGD(model.parameters(), lr = learning_rate, weight_decay
 
 
 
-# Train!!!
+# Train!!! ~30 λεπτά κάνει στο Google Colab με GPU
 total_step = len(train_loader)
 for epoch in range(num_epochs):
     for (i, (images, labels)) in enumerate(train_loader):  
@@ -218,7 +224,8 @@ for epoch in range(num_epochs):
             labels = labels.to(device)
 
             outputs        = model(images)
-            (_, predicted) = torch.max(outputs.data, 1)
+            (_, predicted) = torch.max(outputs.data, 1) # Το μοντέλο επιστρέφει πιθανότητες για κάθε κλάση!
+            # Έτσι, παίρνουμε την κλάση με τη μέγιστη πιθανότητα.
 
             total   += labels.size(0)
             correct += (predicted == labels).sum().item()
@@ -227,7 +234,9 @@ for epoch in range(num_epochs):
 
         print(f'Accuracy of the network on the {5000} validation images: {100 * correct / total} %')
 
-with torch.no_grad():
+
+
+with torch.no_grad(): # Λέμε στο Torch να μην κρατάει γράφους για τον υπολογισμό των παραγώγων (backpropagation)!
     correct = 0
     total   = 0
     for images, labels in test_loader:
@@ -243,3 +252,4 @@ with torch.no_grad():
         del images, labels, outputs;
 
     print(f'Accuracy of the network on the {10000} test images: {100 * correct / total} %')
+    # Βγαίνει ~80% το αποτέλεσμα.
