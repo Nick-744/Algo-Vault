@@ -236,10 +236,11 @@ for epoch in range(num_epochs):
 
 
 
+# Test!!!
 with torch.no_grad(): # Λέμε στο Torch να μην κρατάει γράφους για τον υπολογισμό των παραγώγων (backpropagation)!
     correct = 0
     total   = 0
-    for images, labels in test_loader:
+    for (images, labels) in test_loader:
         images = images.to(device)
         labels = labels.to(device)
 

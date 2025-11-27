@@ -1,3 +1,10 @@
+'''
+- Βιβλιοθήκες που χρειάζονται:
+pip install tensorflow
+pip install matplotlib
+pip install numpy
+'''
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -203,51 +210,54 @@ plt.show()
 # ===< INTERACTIVE PAINT APPLICATION >=== #
 import tkinter as tk
 def launch_paint_app(model: NeuralNet) -> None:
-    # Βασικές ρυθμίσεις "εικόνας"
-    CANVAS_SIZE = 280      # 280x280 pixels
-    GRID_SIZE   = 28       # 28x28 "κελιά" όπως το MNIST
+    CANVAS_SIZE = 280 # 280x280 pixels
+    GRID_SIZE   = 28  # 28x28 όπως το MNIST!
     CELL_SIZE   = CANVAS_SIZE // GRID_SIZE
 
-    # Πίνακας 28x28 που θα ταΐζουμε στο δίκτυο (τιμή 0..1)
-    image_array = np.zeros((GRID_SIZE, GRID_SIZE), dtype=np.float32)
+    # Πίνακας 28x28 που θα δίνουμε στο νευρωνικό (τιμή 0..1)
+    image_array = np.zeros((GRID_SIZE, GRID_SIZE), dtype = np.float32)
 
-    # Δημιουργία παραθύρου Tk
+    # Δημιουργία παραθύρου Tk...
     root = tk.Tk()
-    root.title("Draw 0 or 8")
+    root.title('Ζωγράφισε 0 ή 8!')
 
-    canvas = tk.Canvas(root, width=CANVAS_SIZE, height=CANVAS_SIZE, bg="black")
-    canvas.pack(padx=10, pady=10)
+    canvas = tk.Canvas(root, width = CANVAS_SIZE, height = CANVAS_SIZE, bg = 'black')
+    canvas.pack(padx = 10, pady = 10)
 
     # Label για πρόβλεψη
-    prediction_var = tk.StringVar(value="Draw a digit (0 or 8)")
-    prediction_label = tk.Label(root, textvariable=prediction_var, font=("Arial", 14))
-    prediction_label.pack(pady=5)
+    prediction_var   = tk.StringVar(value = 'Ζωγράφισε ένα ψηφίο (0 ή 8)')
+    prediction_label = tk.Label(root, textvariable = prediction_var, font = ('Arial', 14))
+    prediction_label.pack(pady = 5)
 
-    # Συνάρτηση που καθαρίζει την ζωγραφιά
+    # Συνάρτηση για καθαρισμό του Canvas!
     def clear_canvas():
-        canvas.delete("all")              # Καθαρίζει το Canvas
-        image_array[:] = 0.0              # Μηδενίζει τον πίνακα 28x28
-        prediction_var.set("Draw a digit (0 or 8)")
+        canvas.delete('all') # Καθαρίζει το Canvas
+        image_array[:] = 0.0 # Μηδενίζει τον πίνακα 28x28
+        prediction_var.set('Ζωγράφισε ένα ψηφίο (0 ή 8)') # Επαναφέρει το label
 
-    clear_button = tk.Button(root, text="Erase drawing", command=clear_canvas)
-    clear_button.pack(pady=5)
+        return;
+
+    clear_button = tk.Button(root, text = 'Επαναφορά', command = clear_canvas)
+    clear_button.pack(pady = 5)
 
     # Συνάρτηση που ενημερώνει την πρόβλεψη του μοντέλου
     def update_prediction():
         # Μετατρέπουμε το 28x28 σε (1, 784)
-        x_input = image_array.reshape(1, -1)  # ήδη 0..1
-        prob_8 = float(model.forward(x_input)[0, 0])
+        x_input         = image_array.reshape(1, -1) # ήδη 0..1!
+        prob_8          = float(model.forward(x_input)[0, 0])
         predicted_label = 8 if prob_8 >= 0.5 else 0
-        prediction_var.set(f"Model thinks: {predicted_label}  (p(8) = {prob_8:.2f})")
+        prediction_var.set(f'Το μοντέλο επιστρέφει: {predicted_label}  (p(8) = {prob_8:.2f})')
+
+        return;
 
     # Συνάρτηση ζωγραφικής με το mouse
     def draw(event):
-        x, y = event.x, event.y
-        if 0 <= x < CANVAS_SIZE and 0 <= y < CANVAS_SIZE:
-            j = x // CELL_SIZE  # column
-            i = y // CELL_SIZE  # row
+        (x, y) = (event.x, event.y)
+        if (0 <= x < CANVAS_SIZE) and (0 <= y < CANVAS_SIZE):
+            j = x // CELL_SIZE # column
+            i = y // CELL_SIZE # row
 
-            # Κάνουμε λίγο πιο "παχύ" το πινέλο: 3x3 γύρω από το σημείο
+            # Κάνουμε λίγο πιο 'παχύ' το πινέλο: 3x3 γύρω από το σημείο
             for di in [-1, 0, 1]:
                 for dj in [-1, 0, 1]:
                     ii = i + di
@@ -258,15 +268,21 @@ def launch_paint_app(model: NeuralNet) -> None:
                         y0 = ii * CELL_SIZE
                         x1 = x0 + CELL_SIZE
                         y1 = y0 + CELL_SIZE
-                        canvas.create_rectangle(x0, y0, x1, y1,
-                                                fill="white", outline="white")
+                        canvas.create_rectangle(
+                            x0, y0, x1, y1,
+                            fill = 'white', outline = 'white'
+                        )
             # Μετά από κάθε stroke, ενημέρωσε πρόβλεψη
             update_prediction()
 
+        return;
+
     # Ζωγραφίζουμε κρατώντας πατημένο το αριστερό κουμπί
-    canvas.bind("<B1-Motion>", draw)
+    canvas.bind('<B1-Motion>', draw)
 
     root.mainloop()
 
-# Εκκίνηση του Tk παραθύρου μετά την εκπαίδευση + plots
+    return;
+
+# Εκκίνηση του Tk παραθύρου μετά τα plots...
 launch_paint_app(model)
