@@ -82,7 +82,7 @@ class NeuralNet:
         
         # Gradients for W2, b2
         dW2 = (self.a1.T @ dZ2) / m
-        db2 = np.sum(dZ2, axis=0, keepdims=True) / m
+        db2 = np.sum(dZ2, axis = 0, keepdims = True) / m
         
         # Backpropagate to Hidden Layer
         dA1 = dZ2 @ self.W2.T
@@ -90,7 +90,7 @@ class NeuralNet:
         
         # Gradients for W1, b1
         dW1 = (x.T @ dZ1) / m
-        db1 = np.sum(dZ1, axis=0, keepdims=True) / m
+        db1 = np.sum(dZ1, axis = 0, keepdims = True) / m
         
         # --- LEARNING ALGORITHM (SGD UPDATE) --- #
         # θ_t = θ_{t-1} - μ * gradient
@@ -210,7 +210,7 @@ plt.show()
 # ===< INTERACTIVE PAINT APPLICATION >=== #
 import tkinter as tk
 def launch_paint_app(model: NeuralNet) -> None:
-    CANVAS_SIZE = 280 # 280x280 pixels
+    CANVAS_SIZE = 320 # 320x320 pixels
     GRID_SIZE   = 28  # 28x28 όπως το MNIST!
     CELL_SIZE   = CANVAS_SIZE // GRID_SIZE
 
